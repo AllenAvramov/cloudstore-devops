@@ -27,3 +27,27 @@ jobs:
 
       - name: Run pytest
         run: python -m pytest -v
+
+      - name: Build Docker image
+        run: docker build -t cloudstore:ci .
+
+      - name: Start CloudStore image
+        run: docker run -d --name cloudstore-test -p 8000:8000 cloudstore:ci
+
+      - name: Smoke test CloudStore
+        run: |
+          for i in {1..10}; do
+              if curl --fail --silent http://localhost:8000/health; then
+                  echo "CloudStore is healthy"
+                  exit 0
+              fi
+              sleep 2
+          done
+
+          echo "CloudStore failed health check"
+          docker logs cloudstore-test
+          exit 1
+
+      - name: Stop CloudStore container
+        if: always()
+        run: docker rm -f cloudstore-test || true
