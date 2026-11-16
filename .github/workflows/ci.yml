@@ -34,6 +34,12 @@ jobs:
       - name: Start CloudStore image
         run: docker run -d --name cloudstore-test -p 8000:8000 cloudstore:ci
 
+      - name: Verify non-root container user
+        run: |
+          USER_ID=$(docker exec cloudstore-test id -u)
+          echo "Container UID: $USER_ID"
+          test "$USER_ID" != "0"
+
       - name: Smoke test CloudStore
         run: |
           for i in {1..10}; do
@@ -45,7 +51,7 @@ jobs:
           done
 
           echo "CloudStore failed health check"
-          docker logs cloudstore-test
+          docker logs cloudstore-test || true
           exit 1
 
       - name: Stop CloudStore container
