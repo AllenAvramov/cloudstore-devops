@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: cloudstore-service
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: cloudstore
+
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
