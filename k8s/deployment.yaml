@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: cloudstore
+
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: cloudstore
+
+  template:
+    metadata:
+      labels:
+        app: cloudstore
+
+    spec:
+      containers:
+        - name: cloudstore
+          image: cloudstore:k8s-v2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+
+          # Check if the application needs restarting
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+
+          # Check if the application can receive traffic
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 3
