@@ -3,6 +3,8 @@ name: CloudStore CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "k8s/deployment.yaml"
   pull_request:
     branches: [main]
 
@@ -64,8 +66,9 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       packages: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -91,3 +94,45 @@ jobs:
           push: true
           tags: ghcr.io/allenavramov/cloudstore-devops:sha-${{ github.sha }}
           platforms: linux/amd64,linux/arm64
+
+      - name: Update Kubernetes image reference
+        env:
+          IMAGE: ghcr.io/allenavramov/cloudstore-devops:sha-${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path("k8s/deployment.yaml")
+          content = path.read_text()
+
+          updated, count = re.subn(
+              r"(?m)^(\s*image:\s*)\S+",
+              lambda match: match.group(1) + os.environ["IMAGE"],
+              content,
+          )
+
+          if count != 1:
+              raise SystemExit(f"Expected one image field, found {count}")
+
+          path.write_text(updated)
+          print(f"Updated image to {os.environ['IMAGE']}")
+          PY
+
+      - name: Create deployment update PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update CloudStore deployment image"
+          branch: automation/update-cloudstore-image
+          delete-branch: true
+          title: "Deploy latest CloudStore image"
+          body: |
+            This PR was generated automatically by GitHub Actions.
+
+            It updates k8s/deployment.yaml to use:
+            ghcr.io/allenavramov/cloudstore-devops:sha-${{ github.sha }}
+
+            The image was built and published after CI passed.
+          add-paths: k8s/deployment.yaml
