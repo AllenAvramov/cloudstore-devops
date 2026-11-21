@@ -1,12 +1,15 @@
 from fastapi import FastAPI
-
+import socket
 
 app = FastAPI()
 
 @app.get("/health")
 def health():
-    return {"status": "healthy",
-            "service": "cloudstore"}
+    return {
+            "status": "healthy",
+            "service": "cloudstore",
+            "pod": socket.gethostname()
+        }
 
 @app.get("/health/live")
 def liveness():
