@@ -11,6 +11,8 @@ def test_health():
 
     assert response.json()["status"] == "healthy"
     assert response.json()["service"] == "cloudstore"
+    assert isinstance(response.json()["pod"], str)
+    assert len(response.json()["pod"]) > 0
 
 def test_liveness():
     response = client.get("/health/live")
