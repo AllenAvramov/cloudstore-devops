@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: cloudstore
-          image: ghcr.io/allenavramov/cloudstore-devops:sha-283beb8b76926b6cbbac63dcaec6fda4c820722a
+          image: ghcr.io/allenavramov/cloudstore-devops:sha-3e72d31dcba1eaa21653ef4a5802eac2b351c465
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
