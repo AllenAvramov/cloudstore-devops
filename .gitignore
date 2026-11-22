@@ -11,3 +11,10 @@ __pycache__/
 # Environment variables
 .env
 .env.*
+
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
